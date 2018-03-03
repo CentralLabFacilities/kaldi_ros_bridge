@@ -33,9 +33,7 @@ def rate_limited(maxPerSecond):
             ret = func(*args, **kargs)
             lastTimeCalled[0] = time.clock()
             return ret
-
         return rate_limited_function
-
     return decorate
 
 
@@ -50,7 +48,7 @@ class KaldiRosClient(WebSocketClient):
         self.save_adaptation_state_filename = save_adaptation_state_filename
         self.send_adaptation_state_filename = send_adaptation_state_filename
 
-    @rate_limited(4)
+    @rate_limited(30)
     def send_data(self, data):
         self.send(data, binary=True)
 
@@ -69,7 +67,7 @@ class KaldiRosClient(WebSocketClient):
             with self.audiofile as audiostream:
                 for block in iter(lambda: audiostream.read(self.byterate / 4), ""):
                     self.send_data(block)
-                    rospy.loginfo(">>> Audio sent, now sending EOS")
+                    rospy.logdebug(">>> Audio sent, now sending EOS")
             self.send("EOS")
 
         t = threading.Thread(target=send_data_to_ws)
@@ -82,13 +80,12 @@ class KaldiRosClient(WebSocketClient):
                 trans = response['result']['hypotheses'][0]['transcript']
                 if response['result']['final']:
                     # print >> sys.stderr, trans,
-                    self.final_hyps.append(trans)
-                    rospy.loginfo(">>> '\r%s'" % trans.replace("\n", "\\n"))
+                    # self.final_hyps.append(trans)
+                    rospy.loginfo(trans.replace("\n", "\\n"))
                 else:
                     print_trans = trans.replace("\n", "\\n")
                     if len(print_trans) > 80:
                         print_trans = "... %s" % print_trans[-76:]
-                        rospy.loginfo(">>> '\r%s'" % print_trans)
             if 'adaptation_state' in response:
                 if self.save_adaptation_state_filename:
                     print >> sys.stderr, "Saving adaptation state to %s" % self.save_adaptation_state_filename
@@ -107,8 +104,10 @@ class KaldiRosClient(WebSocketClient):
 
 
 def main():
+    rospy.init_node('kaldi_ros')
+
     parser = argparse.ArgumentParser(description='Command line client for kaldigstserver')
-    parser.add_argument('-u', '--uri', default="ws://localhost:8888/client/ws/speech", dest="uri",
+    parser.add_argument('-u', '--uri', default="ws://localhost:8181/client/ws/speech", dest="uri",
                         help="Server websocket URI")
     parser.add_argument('-r', '--rate', default=32000, dest="rate", type=int,
                         help="Rate in bytes/sec at which audio should be sent to the server. NB! For raw 16-bit audio it must be 2*samplerate!")
@@ -130,9 +129,7 @@ def main():
                         save_adaptation_state_filename=args.save_adaptation_state,
                         send_adaptation_state_filename=args.send_adaptation_state)
     ws.connect()
-    result = ws.get_full_hyp()
-    rospy.loginfo("\n >>> Final result: %s " % result.encode('utf-8'))
-
+    rospy.spin()
 
 if __name__ == "__main__":
     main()

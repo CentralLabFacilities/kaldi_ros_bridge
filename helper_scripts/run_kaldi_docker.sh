@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+echo ""
 echo "Your prefix is ---> $prefix"
 echo "After the container has started, run: /opt/start.sh -y /opt/models/sample_english_nnet2.yaml"
 echo ""

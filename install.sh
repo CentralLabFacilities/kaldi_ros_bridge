@@ -10,12 +10,12 @@ else
 
 #### PIP INSTALL WSPY
 
-if pip2 --version | grep 'pip 8.' ; then
-  pip2 install --ignore-installed --prefix=$prefix --system 'ws4py==0.3.2'
-  pip2 install --ignore-installed --prefix=$prefix --system 'ws4py==0.3.2'
+if pip --version | grep 'pip 8.' ; then
+  pip install --ignore-installed --prefix=$prefix --system 'ws4py==0.3.2'
+  pip install --ignore-installed --prefix=$prefix --system 'ws4py==0.3.2'
 else
-  pip2 install --ignore-installed --prefix=$prefix 'ws4py==0.3.2'
-  pip2 install --ignore-installed --prefix=$prefix 'ws4py==0.3.2'
+  pip install --ignore-installed --prefix=$prefix 'ws4py==0.3.2'
+  pip install --ignore-installed --prefix=$prefix 'ws4py==0.3.2'
 fi
 
 #### COPY SCRIPTS
